@@ -7,6 +7,8 @@
     using System.Threading;
     using System.Threading.Tasks;
 
+    using HtmlAgilityPack;
+
     public class Program
     {
         /// <summary>
@@ -40,7 +42,9 @@
                     {
                         foreach (string download in await AsyncDownload.FromUrlRepeat(Url, multiple).ConfigureAwait(false))
                         {
-                            downloads.Add((Encoding.ASCII.GetBytes(download), download.Substring(0, 200)));
+                            var doc = new HtmlDocument();
+                            doc.LoadHtml(download);
+                            downloads.Add((Encoding.ASCII.GetBytes(download), doc.QuerySelector(".introduction > p").InnerText));
                         }
 
                         cancellationTokenSource.Cancel();
@@ -60,7 +64,7 @@
                 i++;
                 Console.WriteLine($"{Environment.NewLine} File {i} of {multiple}");
                 Console.WriteLine($"{Environment.NewLine} # of bytes equals {download.bytes.Length}");
-                Console.WriteLine($"{Environment.NewLine} content is {download.content} ...");
+                Console.WriteLine($"{Environment.NewLine} content is {Environment.NewLine} {download.content} ...");
             }
         }
     }
